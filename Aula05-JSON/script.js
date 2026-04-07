@@ -32,19 +32,21 @@ function lerProdutos(){
             var objJSON = JSON.parse(this.responseText);
             var produtos = objJSON.produtos;
             var txt = "";
-            if(produtos.lenght == 0){
+            if(produtos.length == 0){
                 txt = "<tr><th>Nenhum produto cadastrado!</th></tr>";
             }else{
                 txt += "<tr> ";
                 txt += " <th> Código </th>";
                 txt += " <th> Nome </th>";
                 txt += " <th> Preço </th>";
+                txt += " <th> Excluir </th>";
                 txt += "</tr>";
                 produtos.forEach(prod => {
                     txt += "<tr>";
-                    txt += " <td>" + prod.id + "</td>"
-                    txt += " <td>" + prod.nome + "</td>"
-                    txt += " <td>" + prod.preco + "</td>"
+                    txt += " <td>" + prod.id + "</td>";
+                    txt += " <td>" + prod.nome + "</td>";
+                    txt += " <td>" + prod.preco + "</td>";
+                    txt += " <td><button onclick='deletar(" + prod.id + ")'> X </button></td>";
                     txt += "</tr>";
                 })
             }
@@ -54,4 +56,47 @@ function lerProdutos(){
 
     req.open("GET", "servidor.php?buscar", true);
     req.send();
+}
+
+function deletar(idProd){
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = function(){
+        if(this.readyState == 4){
+            var objJSON = JSON.parse(this.responseText);
+            if(objJSON.resposta){
+                alert("Produto excluído com sucesso!");
+                lerProdutos();
+            }
+        }
+    };
+    req.open("GET", "servidor.php?excluir&idProduto=" + idProd, true);
+    req.send();
+
+}
+
+function add(idProd){
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = function(){
+        if(this.readyState == 4 && this,this.status == 200){
+            var objJSON = JSON.parse(this.responseText);
+            if(objJSON.resposta){
+                if(objJSON.id){
+                    alert(objJSON.resposta + "\nID: " + objJSON.id);
+                    lerProdutos();
+                }else
+                    alert(objJSON.resposta);
+            }
+        }
+    };
+    var nome = document.getElementById("txtNome").value;
+    var preco = document.getElementById("txtPreco").value;
+
+    if(nome != ""){
+        document.getElementById("txtNome").value  = "";
+        document.getElementById("txtPreco").value = "";
+
+        req.open("POST", "servidor.php?inserir", true);
+        req.setRequestHeader("Content-type" ,"aplication/x-www-form-urlencoded");
+        req.send("name=" + nome + "&price=" + preco);
+    }
 }
